@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Profile</title>
+    <link rel="stylesheet" href="survey.css">
+</head>
+<body>
+    <div class="survey-card">
+        <h2>Student Profile</h2>
+        <p class="subtitle">Welcome back, <strong id="profile-username">User</strong>!</p>
+
+        <div id="survey-results" style="line-height: 1.8; font-size: 15px;">
+            Loading your study habits...
+        </div>
+
+        <button type="button" onclick="window.location.href='index.html'">Retake Survey</button>
+        <button type="button" style="background-color: #ffffff; margin-top: 10px;" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        const username = localStorage.getItem('loggedInUser');
+        if (!username) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('profile-username').textContent = username;
+            loadProfileData(username);
+        }
+
+        async function loadProfileData(user) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/Survey/user/${user}`);
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    const d = result.data;
+                    document.getElementById('survey-results').innerHTML = `
+                        <p><strong>Year Level:</strong> ${d.course_year}</p>
+                        <p><strong>Preferred Study Time:</strong> ${d.preferred_study_time}</p>
+                        <p><strong>Learning Mode:</strong> ${d.learning_mode}</p>
+                        <p><strong>Daily Study Hours:</strong> ${d.daily_study_hours} hrs</p>
+                        <p><strong>Favorite Tool:</strong> ${d.favorite_tool}</p>
+                        <p><strong>Stress Level:</strong> ${d.stress_level} / 5</p>
+                    `;
+                } else {
+                    document.getElementById('survey-results').innerHTML =
+                        "<p>You haven't answered the survey yet. Click <strong>Retake Survey</strong> below!</p>";
+                }
+            } catch (error) {
+                document.getElementById('survey-results').innerHTML =
+                    "<p>Could not load profile data from server.</p>";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

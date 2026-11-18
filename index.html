@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Lifestyle & Study Habits Survey</title>
+    <link rel="stylesheet" href="survey.css">
+</head>
+<body>
+    <div class="survey-card">
+        <h2>Student Lifestyle & Study Habits</h2>
+        <p class="subtitle">Logged in as: <strong id="display-user">Guest</strong></p>
+
+        <div class="form-group">
+            <label for="course_year">Course & Year Level</label>
+            <select id="course_year">
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year" selected>3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="preferred_study_time">Preferred Study Time</label>
+            <select id="preferred_study_time">
+                <option value="Morning">Morning (6 AM – 12 PM)</option>
+                <option value="Afternoon">Afternoon (12 PM – 6 PM)</option>
+                <option value="Night">Night (6 PM – 12 AM)</option>
+                <option value="Late Night">Late Night / Midnight Owl (12 AM – 6 AM)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="learning_mode">Learning Mode</label>
+            <select id="learning_mode">
+                <option value="Online">Online</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Face-to-Face">Face-to-Face</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="daily_study_hours">Daily Study Hours (Outside Class)</label>
+            <input id="daily_study_hours" type="number" min="0" max="24" step="0.5" placeholder="e.g., 3.5">
+        </div>
+
+        <div class="form-group">
+            <label for="favorite_tool">Favorite Data / Coding Tool</label>
+            <select id="favorite_tool">
+                <option value="Python">Python</option>
+                <option value="R / RStudio">R / RStudio</option>
+                <option value="SQL / PostgreSQL">SQL / PostgreSQL</option>
+                <option value="HTML / CSS / JS">HTML / CSS / JS</option>
+                <option value="Excel / Google Sheets">Excel / Google Sheets</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Current Stress Level (1 = Very Chill, 5 = Very Stressed)</label>
+            <div class="radio-group">
+                <label><input type="radio" name="stress_level" value="1"> 1</label>
+                <label><input type="radio" name="stress_level" value="2"> 2</label>
+                <label><input type="radio" name="stress_level" value="3" checked> 3</label>
+                <label><input type="radio" name="stress_level" value="4"> 4</label>
+                <label><input type="radio" name="stress_level" value="5"> 5</label>
+            </div>
+        </div>
+
+        <button type="button" onclick="submitSurvey()">Submit Survey</button>
+    </div>
+
+    <script>
+        const currentUser = localStorage.getItem('loggedInUser');
+        if (!currentUser) {
+            alert("Please log in first!");
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('display-user').textContent = currentUser;
+        }
+
+        async function submitSurvey() {
+            const studyHours = parseFloat(document.getElementById('daily_study_hours').value);
+            const stressRadio = document.querySelector('input[name="stress_level"]:checked');
+
+            if (isNaN(studyHours) || studyHours < 0 || studyHours > 24) {
+                alert("Please enter valid daily study hours (0 to 24).");
+                return;
+            }
+
+            const postData = {
+                username: currentUser,
+                course_year: document.getElementById('course_year').value,
+                preferred_study_time: document.getElementById('preferred_study_time').value,
+                learning_mode: document.getElementById('learning_mode').value,
+                daily_study_hours: studyHours,
+                favorite_tool: document.getElementById('favorite_tool').value,
+                stress_level: parseInt(stressRadio.value)
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/Survey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    window.location.href = 'profile.html.html';
+                } else {
+                    alert("Failed to submit survey.");
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert("Could not connect to the server.");
+            }
+        }
+    </script>
+</body>
+</html>
